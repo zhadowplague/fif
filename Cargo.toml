@@ -1,0 +1,7 @@
+[package]
+name = "fif"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+process_path = "0.1.4"
