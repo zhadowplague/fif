@@ -1,6 +1,29 @@
 use std::fs;
 use std::env;
+use std::cmp;
 use std::path::PathBuf;
+
+fn find_line(index:usize, text:&str) -> &str {
+    let split = text.split_at(index);
+    let end_index = cmp::min(split.1.find('\n').unwrap_or(index + 10) + split.0.len(), text.len());
+    let start_index = split.0.rfind('\n').unwrap_or(cmp::max(index - 10, 0));
+    return &text[start_index..end_index];
+}
+
+fn count_occurences(in_text:&str, character:char, until_index:usize) -> usize {
+    let mut n = 0;
+    let mut i = 0;
+    for c in in_text.chars() {
+        if c == character {
+            n += 1;
+        }
+        i += 1;
+        if i >= until_index {
+            break;
+        }
+    }
+    return n;
+}
 
 fn search_directory(path:&PathBuf, content:&String) {
     let dir = fs::read_dir(path);
@@ -28,8 +51,12 @@ fn search_directory(path:&PathBuf, content:&String) {
                 continue;
             }
             let u_file_content = file_content.unwrap();
-            if u_file_content.contains(content) {
+            let content_index = u_file_content.find(content);
+            if content_index.is_some() {
+                let line_text = find_line(content_index.unwrap(), &u_file_content).trim();
+                let newline_count = count_occurences(&u_file_content, '\n', content_index.unwrap());
                 println!("Found in {}", u_entry.path().to_str().unwrap_or("Err"));
+                println!("{}: {}", newline_count, line_text);
             }
         }
         else {
